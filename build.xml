@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<project name="TestBaristamaticDB" default="all" basedir=".">
+
+	<!-- Initialization variables -->
+	<property name="thirdparty.lib.dir" value="libs" />
+	<property name="src.dir" value="src" />
+	<property name="test.dir" value="test" />
+	<property name="jar.file" value="${ant.project.name}.jar" />
+	<property name="build.dir" value="build" />
+	<property name="dist.dir" value="dist" />
+	<property name="config.dir" value="config" />
+	<property name="database.dir" value="database" />
+
+	<path id="project.classpath">
+		<fileset dir="${thirdparty.lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	  <path id="run.classpath">
+	      <fileset dir="${thirdparty.lib.dir}">
+	         <include name="**/*.jar" />
+	      </fileset>
+	      <fileset dir="${dist.dir}">
+	         <include name="${jar.file}" />
+	      </fileset>
+	   </path>
+
+	<!-- ====================================== -->
+	<target name="all" depends="jar" description="Does the whole enchilada" />
+
+
+	<!-- ====================================== -->
+	<target name="clean" description="Deletes compiled and generated code">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+
+	<!-- ====================================== -->
+	<target name="compile" description="Compiles the Java code">
+		<mkdir dir="${build.dir}" />
+		<javac srcdir="${src.dir}" destdir="${build.dir}" debug="on">
+			<classpath refid="project.classpath" />
+		</javac>
+	</target>
+
+	<!-- ====================================== -->
+	<target name="jar" depends="compile">
+		<mkdir dir="${dist.dir}" />
+		<jar destfile="${dist.dir}/${jar.file}">
+			<fileset dir="${build.dir}" />
+			<fileset dir="${src.dir}" includes="**/persistence.xml" />
+		</jar>
+	</target>
+
+	<target name="run" depends="jar">
+		<java classname="com.baristamatic.ui.Main" fork="true">
+			<classpath refid="run.classpath"/>
+		</java>
+	</target>
+
+
+	<!-- Start the HSQL DB server -->
+	<target name="startdb" description="Run HSQL database server with clean DB default port is 9001">
+		<!-- Delete database files -->
+		<delete dir="${database.dir}" />
+		<java classname="org.hsqldb.Server" fork="yes" classpathref="project.classpath" failonerror="true">
+			<arg value="-database.0" />
+			<arg value="file:${database.dir}/db" />
+		</java>
+	</target>
+	
+	  <!-- Shutdown the HSQL DB server -->
+	   <target name="shutdowndb"  >
+	   	<sql
+	   	    driver="org.hsqldb.jdbcDriver"
+	   	    url="jdbc:hsqldb:hsql://localhost/mydb"
+	   	    userid="sa"
+	   	    password=""
+	   		classpathref="project.classpath">
+	   		SHUTDOWN;
+	   	</sql>
+	   </target>
+	
+
+	<!-- Start the HSQL DB browser tool -->
+	<target name="dbmanager" description="Start HSQL DB manager">
+		<java classname="org.hsqldb.util.DatabaseManagerSwing" fork="yes" classpathref="project.classpath" failonerror="true">
+			<arg value="-url" />
+			<arg value="jdbc:hsqldb:hsql://localhost/" />
+			<arg value="-driver" />
+			<arg value="org.hsqldb.jdbcDriver" />
+		</java>
+	</target>
+</project>

@@ -1,0 +1,13 @@
+
+	        
+	            import java.sql.*;
+
+	            Class.forName("org.hsqldb.jdbcDriver");
+	            String url = "jdbc:hsqldb:hsql://127.0.0.1/";
+	            Connection con = DriverManager.getConnection(url, "sa", "");
+	            String sql = "SHUTDOWN";
+	            Statement stmt = con.createStatement();
+	            stmt.executeUpdate(sql);
+	            stmt.close();
+	        
+	    
